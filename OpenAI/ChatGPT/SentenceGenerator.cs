@@ -15,14 +15,13 @@ namespace Hamster.OpenAI.ChatGPT
         [SerializeField, Header("OpenAIのAPIキー")]
         private string _apiKey;
 
-        [SerializeField, TextArea(3, 10), Header("GPTの返答方法の指示を書く")]
-        private string _promptMessage;
-
         [SerializeField, Header("チャット返答のモデル")]
         private ModelList _chatModel = ModelList.gpt_4o_mini;
 
         [SerializeField, Header("画像解析のモデル ※現状はGPT-4oが一番良い")]
         private ModelList _imageModel = ModelList.gpt_4o;
+
+        private ModelListConverter _modelListConverter = new();
 
         [SerializeField, Header("チャットの最大トークン")]
         private int _maxChatToken = 300;
@@ -30,19 +29,75 @@ namespace Hamster.OpenAI.ChatGPT
         [SerializeField, Header("画像解析の最大トークン")]
         private int _maxImageToken = 600;
 
+        private int _usedTotalToken = 0;
+
+        /// <summary>
+        /// プレイモードかつ入力メッセージが存在する時にtrueを返す
+        /// </summary>
+        /// <returns></returns>
+        private bool _isPlayModeAndMessageEmpty()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("プレイモードで実行してください。");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(_sendInputMessage))
+            {
+                Debug.LogWarning("メッセージが入力されていません。");
+                return false;
+            }
+
+            return true;
+        }
+
         [SerializeField, Header("ログ出力フラグ")]
         private bool _isLogEnabled = true;
 
-        [SerializeField]
-        Texture2D image;
+        [SerializeField, TextArea(3, 10), Header("GPTの返答方法の指示を書く")]
+        private string _promptMessage;
 
-        private ModelListConverter _modelListConverter = new();
+        [SerializeField, TextArea(3, 10), Header("GPTに送信するメッセージを書く")]
+        private string _sendInputMessage;
+
+        [SerializeField]
+        Texture2D _sendImage;
+
         private List<MessageModel> _messageLists = new();
-        private int _usedTotalToken = 0;
+
+        /// <summary>
+        /// GPTの指示を初期化する
+        /// </summary>
+        public void InitializePromptMessage(string inputMessage)
+        {
+            // GPTの返答方法を設定する
+            MessageModel messageModel = new()
+            {
+                Role = "system",
+                Content = inputMessage
+            };
+
+            if (_messageLists.Count > 0)
+            {
+                _messageLists.Clear();
+            }
+
+            _messageLists.Add(messageModel);
+            _promptMessage = inputMessage;
+
+            if (_isLogEnabled)
+            {
+                Debug.Log($"[初期化されたプロンプトの内容]:{_promptMessage}");
+            }
+        }
 
         /// <summary>
         /// コンテンツを送信して、返答をstringで取得する
         /// </summary>
+        /// <param name="image">送信する画像</param>
+        /// <param name="message">送信するメッセージ</param>
+        /// <returns>GPTから返って来た返答のstring</returns>
         public async UniTask<string> SendContentAsync(Texture2D image, string message, CancellationToken ct)
         {
             // メッセージリストにユーザーの入力を追加
@@ -121,45 +176,31 @@ namespace Hamster.OpenAI.ChatGPT
             return responseObj.Choices[0].Message.Content;
         }
 
-        private async void Start()
+        private void Start()
         {
-            InitializePromptMessage();
-
-            await SendContentAsync(image, "これは何ですか", CancellationToken.None);
+            InitializePromptMessage(_sendInputMessage);
         }
 
-        private void Update()
+        [Button("プロンプトの初期化")]
+        private void InitializePromptButton()
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (_isPlayModeAndMessageEmpty() == false)
             {
-                SendContentAsync(image, "これは何ですか", CancellationToken.None).Forget();
+                return;
             }
+
+            InitializePromptMessage(_promptMessage);
         }
 
-        /// <summary>
-        /// GPTの指示を初期化する
-        /// </summary>
-        [Button("プロンプト初期化ボタン")]
-        private void InitializePromptMessage()
+        [Button("コンテンツを送信")]
+        private void SendContentButton()
         {
-            // GPTの返答方法を設定する
-            MessageModel messageModel = new()
+            if (_isPlayModeAndMessageEmpty() == false)
             {
-                Role = "system",
-                Content = _promptMessage
-            };
-
-            if (_messageLists.Count > 0)
-            {
-                _messageLists.Clear();
+                return;
             }
 
-            _messageLists.Add(messageModel);
-
-            if (_isLogEnabled)
-            {
-                Debug.Log($"[初期化されたプロンプト]:{_promptMessage}");
-            }
+            SendContentAsync(_sendImage, _sendInputMessage, CancellationToken.None).Forget();
         }
 
         /// <summary>
