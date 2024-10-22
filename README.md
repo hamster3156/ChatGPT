@@ -2,7 +2,7 @@
 神ゲー創造エボリューションのゲーム作品で、ChatGPTを利用してテキストを生成する機能を実装しました。このリポジトリでは作成したソースコードをまとめています。
 
 # ダウロード方法
-releaseからunitypackageをダウンロードしてください
+[release](https://github.com/hamster3156/ChatGPT_API/releases/tag/v.1.0.0)からunitypackageをダウンロードしてください
 
 # 必要なツール
 ・[UniTask](https://github.com/Cysharp/UniTask) \
