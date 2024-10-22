@@ -17,7 +17,8 @@ com.unity.nuget.newtonsoft-json
 # 参考にした記事
 ・[ChatGPT APIをUnityから動かす。](https://note.com/negipoyoc/n/n88189e590ac3) \
 ・[GPT-4oをUnityで動かす](https://note.com/361yohen/n/n9d91a80002ab) \
-・[Newtonsoft.Jsonの基本的な使い方](https://qiita.com/kazuma_f/items/55a0b7ff628ab596e6ee)
+・[Newtonsoft.Jsonの基本的な使い方](https://qiita.com/kazuma_f/items/55a0b7ff628ab596e6ee) \
+・[Unityの拡張機能『NaughtyAttributes』を紹介！](https://zenn.dev/m_mikan12/articles/0cb0750c74c96e)
 
 # 注意点
 テキスト生成と画像解析を利用するには、[OpenAI API](https://openai.com/index/openai-api/)サービスを利用してAPIキーを作成する必要があります。利用状況によって料金がかかるのでご注意ください。
