@@ -33,11 +33,42 @@ com.unity.nuget.newtonsoft-json
 ![image](https://github.com/user-attachments/assets/c4cf8bdd-64b7-4fa7-8ec1-176b291570a9)
 
 4. APIのモデルを設定します。\
-画像解析のみGPT-4o,GPT-4o-miniしか対応していないのでご注意ください。現在、GPT-4o-miniで画像解析を行うと使用トークンがとても高くなるということが起こるので、画像解析にはGPT-4oを推奨します。
-![image](https://github.com/user-attachments/assets/b8b1906e-2f02-46a1-ab44-35dac948cfaa)
+画像解析のみGPT-4o,GPT-4o-miniしか対応していないのでご注意ください。現在、GPT-4o-miniで画像解析を行うと使用トークンがとても高くなるということが起こるので、画像解析にはGPT-4oを推奨します。\
+![image](https://github.com/user-attachments/assets/b8b1906e-2f02-46a1-ab44-35dac948cfaa) \
 ![image](https://github.com/user-attachments/assets/70fd4bd1-178d-4fd1-bafe-57de3981ad2f) \
-他のGPTのバージョンを追加したい場合はModelListにバージョンを追加してください。バージョンによっては3.5などコード内で直接書けない単語が出てくるので＿などで置き換えてModelListConverterで文字を変換する処理を追加してください。\
-![image](https://github.com/user-attachments/assets/685f148f-7ed1-4d6e-b315-049ca9baf668)![image](https://github.com/user-attachments/assets/7f83a21a-a3a5-448f-bcdf-4bff3f279b75)
+他のGPTのバージョンを追加したい場合はModelListにバージョンを追加してください。バージョンによっては3.5などコード内で直接書けない単語が出てくるので＿などで置き換えてModelListConverterで文字を変換する処理を追加してください。
+```C#
+// ここにバージョンを追加する
+public enum ModelList
+{
+    gpt_4o,
+    gpt_4o_mini,
+    gpt_3_5_turbo,
+}
+
+// バージョンによっては直接打ち込めないクラスも存在するので、
+// その場合は特定の文字を変換する処理を追記する
+sealed internal class ModelListConverter
+{
+    /// <summary>
+    /// GPTのモデル名を変換する
+    /// </summary>
+    /// <param name="modelList">モデルのタイプ</param>
+    /// <returns>変換されたGPTのモデル名</returns>
+    public string GetConvertModel(ModelList modelList)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder
+            .Append(modelList.ToString())
+            .Replace("_", "-")
+            .Replace("3_5", "3.5");
+            // Replaceに変換対象の文字を追加する
+
+        return stringBuilder.ToString();
+    }
+}
+```
+
 
 6. インスペクターから最大使用トークンを設定します。\
 ![image](https://github.com/user-attachments/assets/dbeb6020-8c35-44b6-8214-7603e30839a5)
@@ -51,5 +82,21 @@ com.unity.nuget.newtonsoft-json
 
 # 参照方法
 インタフェースのISentenceGeneratorをSentenceGeneratorに実装しているので、インタフェースから参照することができます。\
-![image](https://github.com/user-attachments/assets/9b278597-f9f1-435d-9be9-91e4a134dfb3)
+```C#
+public interface ISentenceGenerator
+{
+    /// <summary>
+    /// GPTの指示を初期化する
+    /// </summary>
+    public void InitializePromptMessage(string inputMessage);
+
+    /// <summary>
+    /// コンテンツを送信して、返答をstringで取得する
+    /// </summary>
+    /// <param name="image">送信する画像</param>
+    /// <param name="message">送信するメッセージ</param>
+    /// <returns>GPTから返って来た返答のstring</returns>
+    UniTask<string> SendContentAsync(Texture2D image, string message, CancellationToken ct);
+}
+```
 今回のコードでは含まれていませんが、私はサービスロケーターを利用して参照を行いました。
