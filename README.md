@@ -82,7 +82,7 @@ sealed internal class ModelListConverter
 ![image](https://github.com/user-attachments/assets/c46cf668-8640-404f-a6a8-ad91e60276f8)
 
 # 参照方法
-インタフェースのISentenceGeneratorをSentenceGeneratorに実装しているので、インタフェースから参照することができます。\
+インタフェースのISentenceGeneratorをSentenceGeneratorに実装しているので、インタフェースから参照することができます。
 ```C#
 public interface ISentenceGenerator
 {
