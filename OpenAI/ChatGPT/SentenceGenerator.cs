@@ -12,53 +12,52 @@ namespace Hamster.OpenAI.ChatGPT
 {
     sealed internal class SentenceGenerator : MonoBehaviour, ISentenceGenerator
     {
-        [SerializeField, Header("OpenAI‚ÌAPIƒL[")]
+        [SerializeField, Header("OpenAIã®APIã‚­ãƒ¼")]
         private string _apiKey;
 
-        [SerializeField, Header("ƒ`ƒƒƒbƒg•Ô“š‚Ìƒ‚ƒfƒ‹")]
+        [SerializeField, Header("ãƒãƒ£ãƒƒãƒˆè¿”ç­”ã®ãƒ¢ãƒ‡ãƒ«")]
         private ModelList _chatModel = ModelList.gpt_4o_mini;
 
-        [SerializeField, Header("‰æ‘œ‰ğÍ‚Ìƒ‚ƒfƒ‹ ¦Œ»ó‚ÍGPT-4o‚ªˆê”Ô—Ç‚¢")]
+        [SerializeField, Header("ç”»åƒè§£æã®ãƒ¢ãƒ‡ãƒ« â€»ç¾çŠ¶ã¯GPT-4oãŒä¸€ç•ªè‰¯ã„")]
         private ModelList _imageModel = ModelList.gpt_4o;
 
         private ModelListConverter _modelListConverter = new();
 
-        [SerializeField, Header("ƒ`ƒƒƒbƒg‚ÌÅ‘åƒg[ƒNƒ“")]
+        [SerializeField, Header("ãƒãƒ£ãƒƒãƒˆã®æœ€å¤§ãƒˆãƒ¼ã‚¯ãƒ³")]
         private int _maxChatToken = 300;
 
-        [SerializeField, Header("‰æ‘œ‰ğÍ‚ÌÅ‘åƒg[ƒNƒ“")]
+        [SerializeField, Header("ç”»åƒè§£æã®æœ€å¤§ãƒˆãƒ¼ã‚¯ãƒ³")]
         private int _maxImageToken = 600;
 
         private int _usedTotalToken = 0;
 
         /// <summary>
-        /// ƒvƒŒƒCƒ‚[ƒh‚©‚Â“ü—ÍƒƒbƒZ[ƒW‚ª‘¶İ‚·‚é‚Étrue‚ğ•Ô‚·
+        /// ãƒ—ãƒ¬ã‚¤ãƒ¢ãƒ¼ãƒ‰ã‹ã¤å…¥åŠ›ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãŒå­˜åœ¨ã™ã‚‹æ™‚ã«trueã‚’è¿”ã™
         /// </summary>
-        /// <returns></returns>
         private bool _isPlayModeAndMessageEmpty()
         {
             if (!Application.isPlaying)
             {
-                Debug.LogWarning("ƒvƒŒƒCƒ‚[ƒh‚ÅÀs‚µ‚Ä‚­‚¾‚³‚¢B");
+                Debug.LogWarning("ãƒ—ãƒ¬ã‚¤ãƒ¢ãƒ¼ãƒ‰ã§å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚");
                 return false;
             }
 
             if (string.IsNullOrEmpty(_sendInputMessage))
             {
-                Debug.LogWarning("ƒƒbƒZ[ƒW‚ª“ü—Í‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB");
+                Debug.LogWarning("ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãŒå…¥åŠ›ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚");
                 return false;
             }
 
             return true;
         }
 
-        [SerializeField, Header("ƒƒOo—Íƒtƒ‰ƒO")]
+        [SerializeField, Header("ãƒ­ã‚°å‡ºåŠ›ãƒ•ãƒ©ã‚°")]
         private bool _isLogEnabled = true;
 
-        [SerializeField, TextArea(3, 10), Header("GPT‚Ì•Ô“š•û–@‚Ìw¦‚ğ‘‚­")]
+        [SerializeField, TextArea(3, 10), Header("GPTã®è¿”ç­”æ–¹æ³•ã®æŒ‡ç¤ºã‚’æ›¸ã")]
         private string _promptMessage;
 
-        [SerializeField, TextArea(3, 10), Header("GPT‚É‘—M‚·‚éƒƒbƒZ[ƒW‚ğ‘‚­")]
+        [SerializeField, TextArea(3, 10), Header("GPTã«é€ä¿¡ã™ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’æ›¸ã")]
         private string _sendInputMessage;
 
         [SerializeField]
@@ -67,11 +66,11 @@ namespace Hamster.OpenAI.ChatGPT
         private List<MessageModel> _messageLists = new();
 
         /// <summary>
-        /// GPT‚Ìw¦‚ğ‰Šú‰»‚·‚é
+        /// GPTã®æŒ‡ç¤ºã‚’åˆæœŸåŒ–ã™ã‚‹
         /// </summary>
         public void InitializePromptMessage(string inputMessage)
         {
-            // GPT‚Ì•Ô“š•û–@‚ğİ’è‚·‚é
+            // GPTã®è¿”ç­”æ–¹æ³•ã‚’è¨­å®šã™ã‚‹
             MessageModel messageModel = new()
             {
                 Role = "system",
@@ -88,26 +87,26 @@ namespace Hamster.OpenAI.ChatGPT
 
             if (_isLogEnabled)
             {
-                Debug.Log($"[‰Šú‰»‚³‚ê‚½ƒvƒƒ“ƒvƒg‚Ì“à—e]:{_promptMessage}");
+                Debug.Log($"[åˆæœŸåŒ–ã•ã‚ŒãŸãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã®å†…å®¹]:{_promptMessage}");
             }
         }
 
         /// <summary>
-        /// ƒRƒ“ƒeƒ“ƒc‚ğ‘—M‚µ‚ÄA•Ô“š‚ğstring‚Åæ“¾‚·‚é
+        /// ã‚³ãƒ³ãƒ†ãƒ³ãƒ„ã‚’é€ä¿¡ã—ã¦ã€è¿”ç­”ã‚’stringã§å–å¾—ã™ã‚‹
         /// </summary>
-        /// <param name="image">‘—M‚·‚é‰æ‘œ</param>
-        /// <param name="message">‘—M‚·‚éƒƒbƒZ[ƒW</param>
-        /// <returns>GPT‚©‚ç•Ô‚Á‚Ä—ˆ‚½•Ô“š‚Ìstring</returns>
+        /// <param name="image">é€ä¿¡ã™ã‚‹ç”»åƒ</param>
+        /// <param name="message">é€ä¿¡ã™ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸</param>
+        /// <returns>GPTã‹ã‚‰è¿”ã£ã¦æ¥ãŸè¿”ç­”ã®string</returns>
         public async UniTask<string> SendContentAsync(Texture2D image, string message, CancellationToken ct)
         {
-            // ƒƒbƒZ[ƒWƒŠƒXƒg‚Éƒ†[ƒU[‚Ì“ü—Í‚ğ’Ç‰Á
+            // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒªã‚¹ãƒˆã«ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®å…¥åŠ›ã‚’è¿½åŠ 
             _messageLists.Add(new MessageModel
             {
                 Role = "user",
                 Content = message
             });
 
-            // ƒL[‚Ìİ’è‚â‘—M•û–@‚ğİ’è‚·‚é
+            // ã‚­ãƒ¼ã®è¨­å®šã‚„é€ä¿¡æ–¹æ³•ã‚’è¨­å®šã™ã‚‹
             var headers = new Dictionary<string, string>
             {
                 {
@@ -119,7 +118,7 @@ namespace Hamster.OpenAI.ChatGPT
                 }
             };
 
-            // İ’è‚ğJson‚É•ÏŠ·
+            // è¨­å®šã‚’Jsonã«å¤‰æ›
             string jsonOption = null;
 
             if (image == null)
@@ -131,7 +130,7 @@ namespace Hamster.OpenAI.ChatGPT
                 jsonOption = JsonConvert.SerializeObject(CreateImageOptions(image, message));
             }
 
-            // WebƒŠƒNƒGƒXƒg‚ğì¬
+            // Webãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’ä½œæˆ
             using var reqest = new UnityWebRequest("https://api.openai.com/v1/chat/completions", "POST")
             {
                 uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(jsonOption)),
@@ -143,7 +142,7 @@ namespace Hamster.OpenAI.ChatGPT
                 reqest.SetRequestHeader(header.Key, header.Value);
             }
 
-            // ƒŠƒNƒGƒXƒg‚ğ‘—M
+            // ãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’é€ä¿¡
             await reqest.SendWebRequest().WithCancellation(ct);
 
             if (reqest.result == UnityWebRequest.Result.ConnectionError ||
@@ -152,27 +151,27 @@ namespace Hamster.OpenAI.ChatGPT
                 throw new Exception(reqest.error);
             }
 
-            // ‰ñ“š‚ğæ“¾
+            // å›ç­”ã‚’å–å¾—
             var responseMessage = reqest.downloadHandler.text;
 
-            // Json‚©‚ç‰ñ“š‚ğ•ÏŠ·
+            // Jsonã‹ã‚‰å›ç­”ã‚’å¤‰æ›
             var responseObj = JsonConvert.DeserializeObject<ResponseModel>(responseMessage);
 
-            // g—p‚µ‚½ƒg[ƒNƒ“”‚ğ‰ÁZ
+            // ä½¿ç”¨ã—ãŸãƒˆãƒ¼ã‚¯ãƒ³æ•°ã‚’åŠ ç®—
             _usedTotalToken += responseObj.UseUsage.TotalTokens;
 
             if (_isLogEnabled)
             {
-                Debug.Log($"[©•ª]:{message}");
+                Debug.Log($"[è‡ªåˆ†]:{message}");
                 Debug.Log($"[GPT]:{responseObj.Choices[0].Message.Content}");
-                Debug.Log($"[¡‰ñ‚Ìg—pƒg[ƒNƒ“”]:{responseObj.UseUsage.TotalTokens}");
-                Debug.Log($"[g—p‚µ‚½ƒg[ƒNƒ“‚Ì‡Œv]:{_usedTotalToken}");
+                Debug.Log($"[ä»Šå›ã®ä½¿ç”¨ãƒˆãƒ¼ã‚¯ãƒ³æ•°]:{responseObj.UseUsage.TotalTokens}");
+                Debug.Log($"[ä½¿ç”¨ã—ãŸãƒˆãƒ¼ã‚¯ãƒ³ã®åˆè¨ˆ]:{_usedTotalToken}");
             }
 
-            // ƒƒbƒZ[ƒWƒŠƒXƒg‚É•Ô“š‚ğ’Ç‰Á
+            // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒªã‚¹ãƒˆã«è¿”ç­”ã‚’è¿½åŠ 
             _messageLists.Add(responseObj.Choices[0].Message);
 
-            // •Ô“š‚ğ•Ô‚·
+            // è¿”ç­”ã‚’è¿”ã™
             return responseObj.Choices[0].Message.Content;
         }
 
@@ -181,7 +180,7 @@ namespace Hamster.OpenAI.ChatGPT
             InitializePromptMessage(_sendInputMessage);
         }
 
-        [Button("ƒvƒƒ“ƒvƒg‚Ì‰Šú‰»")]
+        [Button("ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã®åˆæœŸåŒ–")]
         private void InitializePromptButton()
         {
             if (_isPlayModeAndMessageEmpty() == false)
@@ -192,7 +191,7 @@ namespace Hamster.OpenAI.ChatGPT
             InitializePromptMessage(_promptMessage);
         }
 
-        [Button("ƒRƒ“ƒeƒ“ƒc‚ğ‘—M")]
+        [Button("ã‚³ãƒ³ãƒ†ãƒ³ãƒ„ã‚’é€ä¿¡")]
         private void SendContentButton()
         {
             if (_isPlayModeAndMessageEmpty() == false)
@@ -204,13 +203,13 @@ namespace Hamster.OpenAI.ChatGPT
         }
 
         /// <summary>
-        /// ƒ`ƒƒƒbƒg‚ğ‘—‚éƒIƒvƒVƒ‡ƒ“
+        /// ãƒãƒ£ãƒƒãƒˆã‚’é€ã‚‹ã‚ªãƒ—ã‚·ãƒ§ãƒ³
         /// </summary>
-        /// <param name="sendMessage">‘—‚éƒƒbƒZ[ƒW</param>
-        /// <returns>ƒ`ƒƒƒbƒg‚ğ‘—‚éCompletionReqestModel‚ğ•Ô‚·</returns>
+        /// <param name="sendMessage">é€ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸</param>
+        /// <returns>ãƒãƒ£ãƒƒãƒˆã‚’é€ã‚‹CompletionReqestModelã‚’è¿”ã™</returns>
         private CompletionReqestModel CreateChatOptions(string sendMessage)
         {
-            // ‰“š‚·‚éƒ‚ƒfƒ‹‚Ìİ’è
+            // å¿œç­”ã™ã‚‹ãƒ¢ãƒ‡ãƒ«ã®è¨­å®š
             return new CompletionReqestModel
             {
                 Model = _modelListConverter.GetConvertModel(_chatModel),
@@ -220,11 +219,11 @@ namespace Hamster.OpenAI.ChatGPT
         }
 
         /// <summary>
-        /// ‰æ‘œ‚ğ‘—‚éƒIƒvƒVƒ‡ƒ“
+        /// ç”»åƒã‚’é€ã‚‹ã‚ªãƒ—ã‚·ãƒ§ãƒ³
         /// </summary>
-        /// <param name="sendImage">‘—‚é‰æ‘œ</param>
-        /// <param name="sendMessage">‘—‚éƒƒbƒZ[ƒW</param>
-        /// <returns>‰æ‘œ‰ğÍ‚Æƒ`ƒƒƒbƒg‚ğ‘—‚éƒIƒvƒVƒ‡ƒ“‚ğ•Ô‚·</returns>
+        /// <param name="sendImage">é€ã‚‹ç”»åƒ</param>
+        /// <param name="sendMessage">é€ã‚‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸</param>
+        /// <returns>ç”»åƒè§£æã¨ãƒãƒ£ãƒƒãƒˆã‚’é€ã‚‹ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’è¿”ã™</returns>
         private object CreateImageOptions(Texture2D sendImage, string sendMessage)
         {
             string base64Image = ConvertTexture2DToBase64(sendImage);
@@ -240,7 +239,7 @@ namespace Hamster.OpenAI.ChatGPT
                 });
             }
 
-            // ‰æ‘œƒf[ƒ^‚ğ’Ç‰Á
+            // ç”»åƒãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ 
             imageMessage.Add(new
             {
                 role = "user",
@@ -280,16 +279,16 @@ namespace Hamster.OpenAI.ChatGPT
         }
 
         /// <summary>
-        /// Texture2D‚ğBase64•¶š—ñ‚É•ÏŠ·‚·‚é
+        /// Texture2Dã‚’Base64æ–‡å­—åˆ—ã«å¤‰æ›ã™ã‚‹
         /// </summary>
-        /// <param name="texture">•ÏŠ·‚·‚éTexture2D</param>
-        /// <returns>Base64•¶š—ñ</returns>
+        /// <param name="texture">å¤‰æ›ã™ã‚‹Texture2D</param>
+        /// <returns>Base64æ–‡å­—åˆ—</returns>
         private string ConvertTexture2DToBase64(Texture2D texture)
         {
-            // Texture2D‚ğƒoƒCƒg”z—ñ‚É•ÏŠ·
+            // Texture2Dã‚’ãƒã‚¤ãƒˆé…åˆ—ã«å¤‰æ›
             byte[] textureBytes = texture.EncodeToPNG();
 
-            // ƒoƒCƒg”z—ñ‚ğBase64•¶š—ñ‚É•ÏŠ·
+            // ãƒã‚¤ãƒˆé…åˆ—ã‚’Base64æ–‡å­—åˆ—ã«å¤‰æ›
             return Convert.ToBase64String(textureBytes);
         }
     }
